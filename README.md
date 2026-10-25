@@ -1,3 +1,4 @@
+![CI](https://github.com/vinaykumard7104-prog/expense-tracker/actions/workflows/ci.yml/badge.svg)
 # ledgerly. - Expense Tracker
 
 Full-stack personal finance app: Spring Boot 4 REST API (JWT, MySQL, Flyway) + a vanilla JS dashboard served from the same app.
