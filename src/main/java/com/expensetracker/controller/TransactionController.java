@@ -28,6 +28,12 @@ public class TransactionController {
         return service.create(userId, r);
     }
 
+    @PutMapping("/{id}")
+    public TransactionResponse update(@AuthenticationPrincipal Long userId, @PathVariable Long id,
+                                      @Valid @RequestBody TransactionRequest r) {
+        return service.update(userId, id, r);
+    }
+
     @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@AuthenticationPrincipal Long userId, @PathVariable Long id) {
         service.delete(userId, id);

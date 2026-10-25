@@ -34,23 +34,23 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponse create(Long userId, TransactionRequest r) {
-        // ownership check: the category must belong to the logged-in user
-        Category category = categories.findByIdAndUserId(r.categoryId(), userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Category not found"));
-        if (category.getType() != r.type()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Category type does not match transaction type");
-        }
+        Category category = resolveCategory(userId, r);
         Transaction t = new Transaction();
-        t.setAmount(r.amount());
-        t.setType(r.type());
-        t.setDescription(r.description());
-        t.setTxnDate(r.txnDate());
-        t.setCategory(category);
         t.setUser(users.getReferenceById(userId));
+        apply(t, r, category);
         transactions.save(t);
+        return toDto(t, alertFor(userId, category, r));
+    }
 
-        String alert = r.type() == TransactionType.EXPENSE ? budgetAlert(userId, category, r.txnDate()) : null;
-        return toDto(t, alert);
+    @Transactional
+    public TransactionResponse update(Long userId, Long id, TransactionRequest r) {
+        // ownership check: only the owner can edit
+        Transaction t = transactions.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Transaction not found"));
+        Category category = resolveCategory(userId, r);
+        apply(t, r, category);
+        transactions.save(t);
+        return toDto(t, alertFor(userId, category, r));
     }
 
     @Transactional
@@ -58,6 +58,28 @@ public class TransactionService {
         Transaction t = transactions.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Transaction not found"));
         transactions.delete(t);
+    }
+
+    /** The category must belong to the logged-in user and match the transaction type. */
+    private Category resolveCategory(Long userId, TransactionRequest r) {
+        Category category = categories.findByIdAndUserId(r.categoryId(), userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Category not found"));
+        if (category.getType() != r.type()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Category type does not match transaction type");
+        }
+        return category;
+    }
+
+    private void apply(Transaction t, TransactionRequest r, Category category) {
+        t.setAmount(r.amount());
+        t.setType(r.type());
+        t.setDescription(r.description());
+        t.setTxnDate(r.txnDate());
+        t.setCategory(category);
+    }
+
+    private String alertFor(Long userId, Category category, TransactionRequest r) {
+        return r.type() == TransactionType.EXPENSE ? budgetAlert(userId, category, r.txnDate()) : null;
     }
 
     private String budgetAlert(Long userId, Category category, LocalDate date) {

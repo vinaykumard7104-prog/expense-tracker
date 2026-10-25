@@ -146,4 +146,42 @@ class TransactionServiceTest {
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
         verify(transactions, never()).delete(any(Transaction.class));
     }
+
+    @Test
+    void update_ownTransaction_changesFieldsAndSaves() {
+        Transaction existing = new Transaction();
+        existing.setAmount(new BigDecimal("100"));
+        when(transactions.findByIdAndUserId(5L, USER)).thenReturn(Optional.of(existing));
+        when(categories.findByIdAndUserId(1L, USER)).thenReturn(Optional.of(category(1L, "Food", TransactionType.EXPENSE)));
+        when(budgets.findByUserIdAndCategoryId(USER, 1L)).thenReturn(Optional.of(budget("8000")));
+        when(transactions.spent(eq(USER), eq(1L), any(), any())).thenReturn(new BigDecimal("250"));
+
+        TransactionResponse r = service.update(USER, 5L, expense("250"));
+
+        assertEquals(new BigDecimal("250"), existing.getAmount());
+        assertEquals("Lunch", existing.getDescription());
+        assertNull(r.budgetAlert());
+        verify(transactions).save(existing);
+    }
+
+    @Test
+    void update_someoneElsesTransaction_throwsNotFound() {
+        when(transactions.findByIdAndUserId(5L, USER)).thenReturn(Optional.empty());
+
+        ApiException ex = assertThrows(ApiException.class, () -> service.update(USER, 5L, expense("250")));
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+        verify(transactions, never()).save(any());
+    }
+
+    @Test
+    void update_typeMismatch_throwsBadRequest() {
+        when(transactions.findByIdAndUserId(5L, USER)).thenReturn(Optional.of(new Transaction()));
+        when(categories.findByIdAndUserId(1L, USER)).thenReturn(Optional.of(category(1L, "Salary", TransactionType.INCOME)));
+
+        ApiException ex = assertThrows(ApiException.class, () -> service.update(USER, 5L, expense("250")));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        verify(transactions, never()).save(any());
+    }
 }
