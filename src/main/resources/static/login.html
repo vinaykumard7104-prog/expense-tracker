@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ledgerly. · Sign in</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3efe6;--card:#fffdf8;--ink:#14130f;--inkt:#f3efe6;--text:#14130f;--lime:#c8f545;--mut:#7a7667;--line:#e4dfd0;--red:#e5484d}
+@media(prefers-color-scheme:dark){:root{--bg:#100f0b;--card:#1a1913;--ink:#2b2a1f;--text:#f3efe6;--mut:#968f7a;--line:#2c2a20}}
+*{box-sizing:border-box;margin:0}
+body{font:15px "DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:grid;place-items:center;padding:20px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:32px;padding:36px;width:min(420px,100%)}
+.logo{font:800 26px "Bricolage Grotesque";letter-spacing:-.04em}.logo b{color:var(--lime);background:var(--ink);padding:0 5px;border-radius:7px;margin-left:1px}
+h1{font:800 38px/1.05 "Bricolage Grotesque";letter-spacing:-.03em;margin:26px 0 6px}
+p{color:var(--mut);margin-bottom:20px}
+form{display:grid;gap:12px}
+input{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px 16px;width:100%}
+input:focus{outline:2px solid var(--lime)}
+button{font:inherit;border:0;cursor:pointer}
+.go{background:var(--lime);color:#14130f;font:800 17px "Bricolage Grotesque";padding:16px;border-radius:99px}
+.go:disabled{opacity:.6}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);padding:5px;border-radius:99px;margin-bottom:18px}
+.seg button{padding:10px;border-radius:99px;font-weight:600;background:none;color:var(--mut)}.seg .on{background:var(--ink);color:var(--inkt)}
+#err{color:var(--red);min-height:20px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">ledgerly<b>.</b></div>
+  <h1 id="t">Welcome back</h1>
+  <p id="s">Sign in to see where your money went.</p>
+  <div class="seg" id="seg"><button class="on" data-m="login">Log in</button><button data-m="register">Create account</button></div>
+  <form id="f">
+    <input id="name" placeholder="Your name" maxlength="100" hidden>
+    <input id="email" type="email" placeholder="Email" required autocomplete="email">
+    <input id="pw" type="password" placeholder="Password (min 6 characters)" minlength="6" required autocomplete="current-password">
+    <div id="err"></div>
+    <button class="go" id="go" type="submit">Log in</button>
+  </form>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+if(localStorage.getItem("token"))location.replace("/");
+let mode="login";
+$("#seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;mode=b.dataset.m;
+  document.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x===b));
+  const reg=mode==="register";$("#name").hidden=!reg;$("#name").required=reg;
+  $("#t").textContent=reg?"Start tracking":"Welcome back";
+  $("#s").textContent=reg?"Create your free account in 10 seconds.":"Sign in to see where your money went.";
+  $("#go").textContent=reg?"Create account":"Log in";$("#err").textContent=""};
+$("#f").onsubmit=async e=>{
+  e.preventDefault();$("#err").textContent="";$("#go").disabled=true;
+  try{
+    const body={email:$("#email").value,password:$("#pw").value};
+    if(mode==="register")body.name=$("#name").value;
+    const r=await fetch("/api/auth/"+mode,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.message||"Something went wrong");
+    localStorage.setItem("token",d.token);localStorage.setItem("name",d.name);
+    location.replace("/");
+  }catch(x){$("#err").textContent=x.message}
+  $("#go").disabled=false;
+};
+</script>
+</body>
+</html>

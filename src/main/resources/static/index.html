@@ -1,0 +1,159 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ledgerly. · Expense Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+  :root{--bg:#f3efe6;--card:#fffdf8;--ink:#14130f;--inkt:#f3efe6;--text:#14130f;--lime:#c8f545;--mut:#7a7667;--line:#e4dfd0;--red:#e5484d;--amb:#e9a23b;--grn:#2f9e44}
+  @media(prefers-color-scheme:dark){:root{--bg:#100f0b;--card:#1a1913;--ink:#2b2a1f;--inkt:#f3efe6;--text:#f3efe6;--mut:#968f7a;--line:#2c2a20;--grn:#7bd88f}}
+  *{box-sizing:border-box;margin:0}
+  body{font:15px "DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:110px}
+  h1,h2,h3,.big{font-family:"Bricolage Grotesque","DM Sans",sans-serif;letter-spacing:-.03em}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px clamp(16px,4vw,48px);position:sticky;top:0;background:var(--bg);z-index:5}
+  .logo{font:800 24px "Bricolage Grotesque";letter-spacing:-.04em}.logo b{color:var(--lime);background:var(--ink);padding:0 4px;border-radius:6px;margin-left:1px}
+  .pills{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:5px;border-radius:99px}
+  .pills button{padding:9px 18px;border-radius:99px;font-weight:600;color:var(--mut)}.pills .on{background:var(--ink);color:var(--inkt)}
+  .av{width:42px;height:42px;border-radius:50%;background:var(--lime);color:#14130f;display:grid;place-items:center;font-weight:800}
+  main{padding:8px clamp(16px,4vw,48px);max-width:1240px;margin:auto}
+  .view{display:none}.view.on{display:block}
+  h1{font-size:clamp(34px,6vw,60px);line-height:1;font-weight:800;margin:10px 0 26px}h1 em{font-style:normal;background:var(--lime);color:#14130f;padding:0 10px;border-radius:14px}
+  .g{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .c{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:26px;min-width:0}
+  .c.ink{background:var(--ink);color:var(--inkt);border:0}.c.lime{background:var(--lime);color:#14130f;border:0}
+  .s7{grid-column:span 7}.s5{grid-column:span 5}.s12{grid-column:span 12}
+  .lbl{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;opacity:.65}
+  .big{font-size:clamp(34px,5vw,58px);font-weight:800;margin:8px 0}
+  .col{display:grid;gap:16px}.col .big{font-size:38px}
+  .tag{display:inline-block;padding:5px 12px;border-radius:99px;background:rgba(200,245,69,.18);color:var(--lime);font-size:13px;font-weight:600}
+  .stack{display:flex;height:22px;border-radius:99px;overflow:hidden;gap:3px;margin:16px 0}.stack i{display:block;height:100%}
+  .r{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.r b{margin-left:auto}.r span.p{color:var(--mut);width:42px;text-align:right}
+  .dot{width:12px;height:12px;border-radius:4px;flex-shrink:0}
+  .rings{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:14px;margin-top:16px}
+  .ring{text-align:center;cursor:pointer}.ring svg{width:92px}.ring small{display:block;color:var(--mut);margin-top:2px}
+  .tx{display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--line)}
+  .ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:800;color:#14130f;flex-shrink:0}
+  .m{flex:1;min-width:0}.m b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.m span{color:var(--mut);font-size:13px}
+  .amt{font:700 17px "Bricolage Grotesque"}.in{color:var(--grn)}
+  .gh{font-size:13px;font-weight:700;color:var(--mut);margin:18px 0 2px;text-transform:uppercase;letter-spacing:.08em}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .chip{padding:8px 16px;border-radius:99px;border:1px solid var(--line);font-weight:600}.chip.on{background:var(--ink);color:var(--inkt);border-color:var(--ink)}
+  input,select{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:13px 16px;width:100%}
+  .bar input{width:auto;margin-left:auto;min-width:180px}
+  .fab{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--lime);color:#14130f;font:800 17px "Bricolage Grotesque";padding:17px 30px;border-radius:99px;box-shadow:0 14px 40px rgba(0,0,0,.28);z-index:6}
+  .fab:hover{transform:translateX(-50%) scale(1.04)}
+  dialog{border:0;border-radius:30px;background:var(--card);color:var(--text);padding:28px;width:min(440px,92vw);margin:auto}
+  dialog::backdrop{background:rgba(20,19,15,.55);backdrop-filter:blur(5px)}
+  dialog form{display:grid;gap:12px}dialog h2{font-size:30px}
+  .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);padding:5px;border-radius:99px}.seg button{padding:11px;border-radius:99px;font-weight:600}.seg .on{background:var(--ink);color:var(--inkt)}
+  .save{background:var(--ink);color:var(--inkt);padding:15px;border-radius:99px;font-weight:700}
+  .toast{position:fixed;top:84px;right:20px;background:var(--ink);color:var(--inkt);padding:14px 20px;border-radius:18px;transform:translateX(130%);transition:.45s;z-index:9;max-width:290px}.toast.show{transform:none}
+  .empty{padding:30px;text-align:center;color:var(--mut)}
+  @media(max-width:860px){.s7,.s5{grid-column:span 12}.pills button{padding:8px 11px;font-size:14px}.logo{font-size:20px}}
+  </style>
+  </head>
+  <body>
+  <header>
+    <div class="logo">ledgerly<b>.</b></div>
+    <div class="pills" id="nav"><button class="on" data-v="ov">Overview</button><button data-v="tx">Transactions</button><button data-v="bu">Budgets</button></div>
+    <button class="av" id="out" title="Log out">A</button>
+  </header>
+  <main>
+    <section class="view on" id="ov"></section>
+    <section class="view" id="tx"></section>
+    <section class="view" id="bu"></section>
+  </main>
+  <button class="fab" id="add">+ Add transaction</button>
+  <dialog id="dlg">
+    <form id="f" method="dialog">
+      <h2>New entry</h2>
+      <div class="seg" id="seg"><button type="button" data-t="EXPENSE" class="on">Expense</button><button type="button" data-t="INCOME">Income</button></div>
+      <input id="fTitle" placeholder="What was it for?" required maxlength="80">
+      <input id="fAmt" type="number" min="0.01" step="0.01" placeholder="Amount in ₹" required>
+      <select id="fCat"></select>
+      <input id="fDate" type="date" required>
+      <button class="save" type="submit">Save entry</button>
+    </form>
+  </dialog>
+  <div class="toast" id="toast"></div>
+  <script>
+  const $=s=>document.querySelector(s);
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const inr=n=>"₹"+Math.round(n).toLocaleString("en-IN");
+  const COL={Food:"#ff8a3d",Rent:"#5b7cff",Travel:"#19c3b1",Shopping:"#ff6fa5",Bills:"#b79cff",Salary:"#c8f545",Freelance:"#7be0a3"};
+  const EXP=["Food","Rent","Travel","Shopping","Bills"],INC=["Salary","Freelance"];
+  const day=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toLocaleDateString("en-CA")};
+  let tx=[],LIM={},CATS=[],TREND=[],filter="ALL",q="",ft="EXPENSE";
+  const TOKEN=localStorage.getItem("token");
+  if(!TOKEN)location.replace("/login.html");
+  function logout(){localStorage.clear();location.replace("/login.html")}
+  async function api(path,opts={}){
+    const r=await fetch("/api"+path,{...opts,headers:{"Content-Type":"application/json",Authorization:"Bearer "+TOKEN}});
+    if(r.status===401){logout();throw new Error("Session expired")}
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||"Request failed")}
+    return r.status===204?null:r.json();
+  }
+  async function load(){
+    const [c,t,b,tr]=await Promise.all([api("/v1/categories"),api("/v1/transactions?size=500"),api("/v1/budgets"),api("/v1/reports/trend?months=6")]);
+    CATS=c;
+    tx=t.content.map(x=>({id:x.id,title:x.description||x.categoryName,cat:x.categoryName,type:x.type,amt:+x.amount,date:x.txnDate}));
+    LIM={};b.forEach(x=>LIM[x.categoryName]=+x.monthlyLimit);
+    TREND=tr.map(m=>(+m.income)-(+m.expense));
+    render();
+  }
+  function toast(m){const e=$("#toast");e.textContent=m;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),3800)}
+  const sum=(t,c)=>tx.filter(x=>x.type===t&&x.date.slice(0,7)===day(0).slice(0,7)&&(!c||x.cat===c)).reduce((s,x)=>s+x.amt,0);
+  const lab=d=>d===day(0)?"Today":d===day(1)?"Yesterday":d;
+  const row=x=>`<div class="tx"><div class="ico" style="background:${COL[x.cat]}">${x.cat[0]}</div><div class="m"><b>${esc(x.title)}</b><span>${x.cat}</span></div><div class="amt ${x.type==="INCOME"?"in":""}">${x.type==="INCOME"?"+":"−"}${inr(x.amt)}</div></div>`;
+  const ring=c=>{const s=sum("EXPENSE",c),p=s/LIM[c]*100,C=163.4,col=p>=100?"var(--red)":p>=80?"var(--amb)":"var(--grn)";
+   return `<div class="ring" data-c="${c}" title="Click to change limit"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${Math.min(p,100)/100*C} ${C}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="14" font-weight="800" fill="var(--text)">${Math.round(p)}%</text></svg><b>${c}</b><small>${inr(s)} of ${inr(LIM[c])}</small></div>`};
+
+  function render(){
+    const inc=sum("INCOME"),exp=sum("EXPENSE"),bal=inc-exp;
+    const pts=TREND.length>1?TREND:[0,0],lo=Math.min(...pts),hi=Math.max(...pts),W=300,H=70;
+    const xy=pts.map((v,i)=>[i*W/(pts.length-1),H-4-(v-lo)/((hi-lo)||1)*(H-12)]);
+    const path="M"+xy.map(p=>p.join(",")).join(" L");
+    const parts=EXP.map(c=>[c,sum("EXPENSE",c)]).filter(x=>x[1]>0);
+    $("#ov").innerHTML=`<h1>${bal<0?`You overspent by <em>${inr(-bal)}</em> this month.`:`You kept <em>${inc?Math.round(bal/inc*100):0}%</em> of what you earned.`}</h1>
+    <div class="g">
+     <div class="c ink s7"><div class="lbl">Balance this month</div><div class="big">${inr(bal)}</div><span class="tag">${inr(inc)} in · ${inr(exp)} out</span>
+       <svg viewBox="0 0 ${W} ${H+6}" style="width:100%;margin-top:18px"><path d="${path} L${W},${H+6} L0,${H+6}Z" fill="rgba(200,245,69,.12)"/><path d="${path}" fill="none" stroke="#c8f545" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+     <div class="col s5"><div class="c lime"><div class="lbl">Income</div><div class="big">${inr(inc)}</div></div><div class="c"><div class="lbl">Expenses</div><div class="big">${inr(exp)}</div></div></div>
+     <div class="c s7"><h3>Where it went</h3><div class="stack">${parts.map(([c,v])=>`<i style="width:${v/exp*100}%;background:${COL[c]}"></i>`).join("")}</div>
+       ${parts.sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="r"><span class="dot" style="background:${COL[c]}"></span>${c}<b>${inr(v)}</b><span class="p">${Math.round(v/exp*100)}%</span></div>`).join("")}</div>
+     <div class="c s5"><h3>Budget health</h3><div class="rings">${EXP.slice(0,4).map(ring).join("")}</div></div>
+     <div class="c s12"><h3>Latest activity</h3>${[...tx].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).slice(0,5).map(row).join("")}</div></div>`;
+    $("#bu").innerHTML=`<h1>Your <em>budgets</em>, at a glance.</h1><div class="c"><p class="lbl">Tap a ring to change its monthly limit</p><div class="rings" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">${EXP.map(ring).join("")}</div></div>`;
+    list();
+    document.querySelectorAll(".ring").forEach(r=>r.onclick=()=>{const v=parseFloat(prompt("Monthly limit for "+r.dataset.c+" (₹)",LIM[r.dataset.c]));if(v>0){const c=CATS.find(x=>x.name===r.dataset.c);api("/v1/budgets",{method:"PUT",body:JSON.stringify({categoryId:c.id,monthlyLimit:v})}).then(load).catch(e=>toast(e.message))}});
+  }
+  function list(){
+    const r=tx.filter(x=>(filter==="ALL"||x.type===filter)&&x.title.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+    const groups={};r.forEach(x=>(groups[x.date]=groups[x.date]||[]).push(x));
+    const keep=document.activeElement&&document.activeElement.id==="q";
+    $("#tx").innerHTML=`<h1>Every <em>rupee</em>, accounted for.</h1><div class="c"><div class="bar">${["ALL","INCOME","EXPENSE"].map(f=>`<button class="chip ${f===filter?"on":""}" data-f="${f}">${f[0]+f.slice(1).toLowerCase()}</button>`).join("")}<input id="q" placeholder="Search transactions" value="${esc(q)}"></div>
+     ${r.length?Object.keys(groups).map(d=>`<div class="gh">${lab(d)}</div>${groups[d].map(row).join("")}`).join(""):`<div class="empty">Nothing matches your search</div>`}</div>`;
+    $("#q").oninput=e=>{q=e.target.value;list()};
+    if(keep){$("#q").focus();$("#q").setSelectionRange(q.length,q.length)}
+    document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{filter=b.dataset.f;list()});
+  }
+  $("#nav").onclick=e=>{const b=e.target.closest("button");if(!b)return;document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("on",x===b));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id===b.dataset.v))};
+  const cats=()=>$("#fCat").innerHTML=(ft==="EXPENSE"?EXP:INC).map(c=>`<option>${c}</option>`).join("");
+  $("#seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;ft=b.dataset.t;document.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x===b));cats()};
+  $("#add").onclick=()=>{$("#f").reset();$("#fDate").value=day(0);ft="EXPENSE";cats();document.querySelectorAll("#seg button").forEach((x,i)=>x.classList.toggle("on",i===0));$("#dlg").showModal()};
+  $("#f").onsubmit=async()=>{
+    const cat=CATS.find(c=>c.name===$("#fCat").value);
+    try{
+      const r=await api("/v1/transactions",{method:"POST",body:JSON.stringify({amount:+$("#fAmt").value,type:ft,description:$("#fTitle").value.trim(),txnDate:$("#fDate").value,categoryId:cat.id})});
+      await load();
+      if(r.budgetAlert)toast(r.budgetAlert);
+    }catch(e){toast(e.message)}
+  };
+  $("#out").textContent=(localStorage.getItem("name")||"U")[0].toUpperCase();
+  $("#out").onclick=logout;
+  load().catch(e=>toast(e.message));
+  </script>
+  </body>
+  </html>
